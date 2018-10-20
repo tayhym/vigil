@@ -9,7 +9,9 @@
     <div>
       <a href="/">Home</a> |
       <a href="/logout">Logout</a> |
+      {% if username=='admin' %}
       <a href="/questions/new">Create a new Question</a>
+      {% endif %}
     </div>
     <hr>
     {% block content %}{% endblock %}

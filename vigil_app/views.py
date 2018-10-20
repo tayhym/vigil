@@ -4,6 +4,9 @@ from flask import session, flash
 from vigil_app import app, db
 from vigil_app.models import Question, Person
 from sqlalchemy import exists
+from flask import render_template, url_for
+
+
 
 @app.route('/', methods=['GET'])
 def home():	
@@ -74,6 +77,16 @@ def do_admin_login():
 	if request.form['password'] == 'password' and request.form['username'] == 'admin':
 		session['logged_in'] = True
 		session['username'] = request.form['username']
+
+		# if person is first time logging in, log person to database
+		old_person = db.session.query(exists().where(Person.username==request.form['username'])).scalar()
+		if (not old_person):
+			new_person_object = Person(username=request.form['username'])
+			db.session.add(new_person_object)
+			db.session.commit()
+			message = "Welcome to the first login " + request.form['username'] 
+			print(message)
+
 	elif request.form['username'] in valid_usernames_passwords:
 		if valid_usernames_passwords.get(request.form['username'])==request.form['password']:
 			session['logged_in'] = True
@@ -139,7 +152,7 @@ def create_questions():
 	else: 
 		questions_display = questions_filtered
 
-	context = {'questions': questions_display,'number_of_questions': len(questions_filtered),'message': message}
+	context = {'questions': questions_display,'number_of_questions': len(questions_filtered),'message': message, 'username':session['username']}
 	return render_template('index_truncated.html',**context)
 
 
