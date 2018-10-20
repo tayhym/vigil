@@ -31,6 +31,8 @@ def home():
 
 		if (len(questions_filtered)>0):
 			questions_display = [questions_filtered[0]]
+		else: 
+			questions_display = questions_filtered
 
 		context = {'questions': questions_display, 'number_of_questions': len(questions_filtered), 'username':session['username']}
 		return render_template('index_truncated.html',**context)
@@ -58,6 +60,8 @@ def participant_home(username):
 
 		if (len(questions_filtered)>0):
 			questions_display = [questions_filtered[0]]
+		else: 
+			questions_display = questions_filtered
 		context = {'questions': questions_display, 'number_of_questions': len(questions_filtered), 'username':session['username'], 'userid':userid}
 		return render_template('index_truncated.html',**context)
 
@@ -132,6 +136,8 @@ def create_questions():
 	#-------
 	if (len(questions_filtered)>0):
 		questions_display = [questions_filtered[0]]
+	else: 
+		questions_display = questions_filtered
 
 	context = {'questions': questions_display,'number_of_questions': len(questions_filtered),'message': message}
 	return render_template('index_truncated.html',**context)
@@ -140,7 +146,7 @@ def create_questions():
 @app.route('/questions/<int:question_id>', methods=['GET'])
 def show_questions(question_id):
     context = {'question': Question.query.get(question_id)}
-    return render_template('show.html', **context)
+    return render_template('show_truncated.html', **context)
 
 
 @app.route('/questions/<int:question_id>', methods=['PUT'])
@@ -179,10 +185,9 @@ def new_vote_questions(question_id):
 
 @app.route('/questions/<int:question_id>/vote', methods=['POST'])
 def create_vote_questions(question_id):
-    question = Question.query.get(question_id)
+	question = Question.query.get(question_id)
 
-    if request.form["vote"] in ["yes", "no", "maybe"]:
-		print(session)
+	if request.form["vote"] in ["yes", "no", "maybe"]:
 		username = session['username']
 		person = Person.query.filter_by(username=username).first()
 		userid = person.id
@@ -191,12 +196,44 @@ def create_vote_questions(question_id):
 		person.answer_question(question_id)
 
 
-    db.session.add(question)
-    db.session.commit()
-    db.session.add(person)
-    db.session.commit()
+	db.session.add(question)
+	db.session.commit()
+	db.session.add(person)
+	db.session.commit()
 
-    return redirect("/questions/%d" % question.id)
+	#-----
+	# back to login screen 
+
+	if not session.get('logged_in'):
+		return render_template('login.html')
+	else:	
+		username = session['username']
+		person = Person.query.filter_by(username=username).first()
+		userid = person.id
+		num_questions_answered = person.number_of_ques_answered
+		questions = Question.query.all()
+		num_questions_total = len(questions)
+		num_questions_left = num_questions_total - num_questions_answered
+
+		questions_filtered = []
+
+		for question in questions:
+			question_id = question.id
+			answered_before = person.check_if_answered(question_id)
+			print(answered_before)
+			if (not answered_before):
+				questions_filtered.append(question)	
+
+		questions = Question.query.all()
+
+		if (len(questions_filtered)>0):
+			questions_display = [questions_filtered[0]]
+		else: 
+			questions_display = questions_filtered
+
+		context = {'questions': questions_display, 'number_of_questions': len(questions_filtered), 'username':session['username']}
+	return render_template('index_truncated.html',**context)
+	# return redirect("/questions/%d" % question.id)
 
 
 
