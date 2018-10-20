@@ -10,9 +10,51 @@ def home():
 	if not session.get('logged_in'):
 		return render_template('login.html')
 	else:	
-	    questions = Question.query.all()
-	    context = {'questions': questions, 'number_of_questions': len(questions), 'username':session['username']}
-	    return render_template('index.html',**context)
+		username = session['username']
+		person = Person.query.filter_by(username=username).first()
+		userid = person.id
+		num_questions_answered = person.number_of_ques_answered
+		questions = Question.query.all()
+		num_questions_total = len(questions)
+		num_questions_left = num_questions_total - num_questions_answered
+
+		questions_filtered = []
+
+		for question in questions:
+			question_id = question.id
+			answered_before = person.check_if_answered(question_id)
+			print(answered_before)
+			if (not answered_before):
+				questions_filtered.append(question)	
+
+		questions = Question.query.all()
+		context = {'questions': questions_filtered, 'number_of_questions': len(questions_filtered), 'username':session['username']}
+		return render_template('index.html',**context)
+
+@app.route('/participant_home', methods=['GET'])
+def participant_home(username):
+	if not session.get('logged_in'):
+		return render_template('login.html')
+	else:
+		person = Person.query.filter_by(username=username).first()
+		userid = person.id
+		num_questions_answered = person.number_of_ques_answered
+		questions = Question.query.all()
+		num_questions_total = len(questions)
+		num_questions_left = num_questions_total - num_questions_answered
+
+		questions_filtered = []
+
+		for question in questions:
+			question_id = question.id
+			answered_before = person.check_if_answered(question_id)
+			print(answered_before)
+			if (not answered_before):
+				questions_filtered.append(question)
+
+		context = {'questions': questions_filtered, 'number_of_questions': len(questions_filtered), 'username':session['username'], 'userid':userid}
+		return render_template('index.html',**context)
+
 
 @app.route('/login', methods=['POST'])
 def do_admin_login(): 
@@ -29,17 +71,19 @@ def do_admin_login():
 
 			# if person is first time logging in, log person to database
 			old_person = db.session.query(exists().where(Person.username==request.form['username'])).scalar()
-			print(old_person)
 			if (not old_person):
 				new_person_object = Person(username=request.form['username'])
 				db.session.add(new_person_object)
 				db.session.commit()
 				message = "Welcome to the first login " + request.form['username'] 
 				print(message)
+			return participant_home(request.form['username'])
 
 	else:
 		flash('wrong password!')
 	return home()
+
+
 
 @app.route('/logout')
 def logout():
@@ -52,16 +96,37 @@ def new_questions():
 
 @app.route('/questions', methods=['POST'])
 def create_questions():
-    if request.form["question_text"].strip() != "":
-        new_question = Question(question_text=request.form["question_text"])
-        db.session.add(new_question)
-        db.session.commit()
-        message = "Succefully added a new poll!"
-    else:
-        message = "Poll question should not be an empty string!"
+	if request.form["question_text"].strip() != "":
+		new_question = Question(question_text=request.form["question_text"])
+		db.session.add(new_question)
+		db.session.commit()
+		message = "Succefully added a new poll!"
+	else:
+		message = "Poll question should not be an empty string!"
 
-    context = {'questions': Question.query.all(),'message': message}
-    return render_template('index.html',**context)
+	questions = Question.query.all()
+
+	#-----extract filtered questions
+	username = session['username']
+	person = Person.query.filter_by(username=username).first()
+	userid = person.id
+	num_questions_answered = person.number_of_ques_answered
+	questions = Question.query.all()
+	num_questions_total = len(questions)
+	num_questions_left = num_questions_total - num_questions_answered
+
+	questions_filtered = []
+
+	for question in questions:
+		question_id = question.id
+		answered_before = person.check_if_answered(question_id)
+		print(answered_before)
+		if (not answered_before):
+			questions_filtered.append(question)	
+	#-------
+
+	context = {'questions': questions_filtered,'number_of_questions': len(questions_filtered),'message': message}
+	return render_template('index.html',**context)
 
 
 @app.route('/questions/<int:question_id>', methods=['GET'])
@@ -109,10 +174,20 @@ def create_vote_questions(question_id):
     question = Question.query.get(question_id)
 
     if request.form["vote"] in ["yes", "no", "maybe"]:
-        question.vote(request.form["vote"],1)
+		print(session)
+		username = session['username']
+		person = Person.query.filter_by(username=username).first()
+		userid = person.id
+		question.vote(request.form["vote"],userid)  # record userid in questions database
+		# record questions in person database
+		person.answer_question(question_id)
+
 
     db.session.add(question)
     db.session.commit()
+    db.session.add(person)
+    db.session.commit()
+
     return redirect("/questions/%d" % question.id)
 
 

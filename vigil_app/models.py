@@ -43,31 +43,47 @@ class Person(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 
 	username = db.Column(db.String(500))
-	ques_answered = db.Column(db.Integer, default=0)
+	ques_answered = db.Column(db.String(10))
 	number_of_ques_answered = db.Column(db.Integer, default=0)
 
 	def __init__(self, username):
-		self.ques_answered = 0
+		tmp = ['0']*10
+		self.ques_answered = ''.join(tmp)
 		self.number_of_ques_answered = 0
 		self.username = username
 
 	def answer_question(self, question_id):
-
-		zero_list = ['0']*500
+		print("person answering question "+ str(question_id))
+		zero_list = ['0']*10
 		zero_list[question_id] = '1'
-		zero_mask = int(''.join(zero_list))
 
-		existing_list = list(str(self.ques_answered))
-		existing_mask = int(''.join(existing_list))
+		existing_list = list(self.ques_answered)
+
 
 		# check that question was not answered before
-		if ((question_id > len(existing_list)) or (existing_list[question_id] == '0')):
-			self.ques_answered = existing_mask | zero_mask
+		if ((question_id+1 > len(existing_list)) or (existing_list[question_id] == '0')):
+			print("new question; answering now")
+			print("question_answered before: "+ (self.ques_answered))
+
+			existing_list[question_id] = '1' 
+			self.ques_answered = ''.join(existing_list)
 			self.number_of_ques_answered += 1
+			print("question_answered after: "+ (self.ques_answered))
+			print("num questions answered: "+str(self.number_of_ques_answered))
 
+	def check_if_answered(self, question_id):
 
+		# check if have answered this question before
+		existing_list = list(self.ques_answered)
+		print('checking if answered, existing answered:'+ self.ques_answered)		
+		# question id starts from 1. list length starts from 1 when empty
+		if (question_id+1 > len(existing_list)):
+			return False
+		elif (existing_list[question_id] == '0'):
+			return False
 
-
+		# True if answered before
+		return True
 
 
 
