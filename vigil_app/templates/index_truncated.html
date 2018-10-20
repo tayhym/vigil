@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <p>Hello {{username}} </p>
+    <p>Number of Questions Remaining - <span id="number_of_questions remaining">{{ number_of_questions }}</span></p>
+    {% for question in questions %}
+    <div>
+        <p>
+            <p><a href="/questions/{{ question.id }}">{{ question.question_text }}</a></p>
+            
+        </p>
+    </div>
+    {% endfor %}
+    <hr />
+{% endblock %}

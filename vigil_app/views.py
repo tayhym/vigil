@@ -28,8 +28,12 @@ def home():
 				questions_filtered.append(question)	
 
 		questions = Question.query.all()
-		context = {'questions': questions_filtered, 'number_of_questions': len(questions_filtered), 'username':session['username']}
-		return render_template('index.html',**context)
+
+		if (len(questions_filtered)>0):
+			questions_display = [questions_filtered[0]]
+
+		context = {'questions': questions_display, 'number_of_questions': len(questions_filtered), 'username':session['username']}
+		return render_template('index_truncated.html',**context)
 
 @app.route('/participant_home', methods=['GET'])
 def participant_home(username):
@@ -52,8 +56,10 @@ def participant_home(username):
 			if (not answered_before):
 				questions_filtered.append(question)
 
-		context = {'questions': questions_filtered, 'number_of_questions': len(questions_filtered), 'username':session['username'], 'userid':userid}
-		return render_template('index.html',**context)
+		if (len(questions_filtered)>0):
+			questions_display = [questions_filtered[0]]
+		context = {'questions': questions_display, 'number_of_questions': len(questions_filtered), 'username':session['username'], 'userid':userid}
+		return render_template('index_truncated.html',**context)
 
 
 @app.route('/login', methods=['POST'])
@@ -124,9 +130,11 @@ def create_questions():
 		if (not answered_before):
 			questions_filtered.append(question)	
 	#-------
+	if (len(questions_filtered)>0):
+		questions_display = [questions_filtered[0]]
 
-	context = {'questions': questions_filtered,'number_of_questions': len(questions_filtered),'message': message}
-	return render_template('index.html',**context)
+	context = {'questions': questions_display,'number_of_questions': len(questions_filtered),'message': message}
+	return render_template('index_truncated.html',**context)
 
 
 @app.route('/questions/<int:question_id>', methods=['GET'])
