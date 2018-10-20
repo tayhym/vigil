@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Create a new Survey</h1>
+    <form method="POST" action="/questions">
+        <p>Question: <input type="text" name="question_text"></p>
+        <p><input type="submit" value="Create a new Survey"></p>
+    </form>
+{% endblock %}

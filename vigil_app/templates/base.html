@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <title>Welcome to Survey Application</title>
+  </head>
+  <body>
+    {% if message %}
+        <p style="text-align: center;">{{ message }}</p>
+    {% endif %}
+    <div>
+      <a href="/">Home</a> |
+      <a href="/questions/new">Create a new Question</a>
+    </div>
+    <hr>
+    {% block content %}{% endblock %}
+  </body>
+</html>
+
+

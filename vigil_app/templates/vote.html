@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        <p>
+        {% if question %}
+            <p>{{ question.question_text }}</p>
+
+            <form action="/questions/{{ question.id }}/vote" method="POST">
+                <input type="radio" name="vote" value="yes">Yes<br>
+                <input type="radio" name="vote" value="no">No<br>
+                <input type="radio" name="vote" value="maybe">Maybe<br>
+
+                <input type="submit" value="Submit" /><br>
+            </form>
+            <p><a href="/questions/{{ question.id }}">Back to Question</a></p>
+        {% else %}
+            Not match found!
+        {% endif %}
+        </p>
+    </div>
+    <hr />
+{% endblock %}
