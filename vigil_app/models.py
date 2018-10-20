@@ -39,10 +39,39 @@ class Question(db.Model):
  			raise Exception("Invalid vote type")
 
 
-# class Person(db.Model):
-# 	id = db.Column(db.Integer, primary_key=True)
+class Person(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
 
-# 	N_ques_answered = db.Column(db.Integer,default=0)
-	
+	username = db.Column(db.String(500))
+	ques_answered = db.Column(db.Integer, default=0)
+	number_of_ques_answered = db.Column(db.Integer, default=0)
 
-# 	def __init__(self,)
+	def __init__(self, username):
+		self.ques_answered = 0
+		self.number_of_ques_answered = 0
+		self.username = username
+
+	def answer_question(self, question_id):
+
+		zero_list = ['0']*500
+		zero_list[question_id] = '1'
+		zero_mask = int(''.join(zero_list))
+
+		existing_list = list(str(self.ques_answered))
+		existing_mask = int(''.join(existing_list))
+
+		# check that question was not answered before
+		if ((question_id > len(existing_list)) or (existing_list[question_id] == '0')):
+			self.ques_answered = existing_mask | zero_mask
+			self.number_of_ques_answered += 1
+
+
+
+
+
+
+
+
+
+
+

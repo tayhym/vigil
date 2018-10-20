@@ -2,7 +2,8 @@ from flask import render_template
 from flask import request, redirect
 from flask import session, flash
 from vigil_app import app, db
-from vigil_app.models import Question
+from vigil_app.models import Question, Person
+from sqlalchemy import exists
 
 @app.route('/', methods=['GET'])
 def home():	
@@ -25,6 +26,17 @@ def do_admin_login():
 		if valid_usernames_passwords.get(request.form['username'])==request.form['password']:
 			session['logged_in'] = True
 			session['username'] = request.form['username']
+
+			# if person is first time logging in, log person to database
+			old_person = db.session.query(exists().where(Person.username==request.form['username'])).scalar()
+			print(old_person)
+			if (not old_person):
+				new_person_object = Person(username=request.form['username'])
+				db.session.add(new_person_object)
+				db.session.commit()
+				message = "Welcome to the first login " + request.form['username'] 
+				print(message)
+
 	else:
 		flash('wrong password!')
 	return home()
