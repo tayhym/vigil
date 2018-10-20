@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <p>Hello {{username}} </p>
     <p>Number of Questions - <span id="number_of_questions">{{ number_of_questions }}</span></p>
     {% for question in questions %}
     <div>
