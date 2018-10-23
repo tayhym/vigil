@@ -6,7 +6,7 @@ from vigil_app import views
 import os
 
 def main():
-    db.create_all()
+    # db.create_all()
 
     # app.secret_key = os.urandom(12) # for running session with wrong password
     # app.run(debug=True, host='0.0.0.0', port=5000)
