@@ -1,1 +1,1 @@
-web: gunicorn vigil_app.init:app --log-file=-
+web: gunicorn server:app --log-file=-
